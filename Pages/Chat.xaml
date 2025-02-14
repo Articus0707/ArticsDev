@@ -1,0 +1,262 @@
+﻿<Page x:Class="Jaina.PageModels.Chat"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      mc:Ignorable="d"
+      d:DesignHeight="560" d:DesignWidth="850"
+      Title="Chat" PreviewKeyDown="hotKeys">
+
+	<Page.Resources>
+		<!-- Анимированный фон -->
+		<RotateTransform x:Key="GradientRotation" Angle="0"/>
+
+		<LinearGradientBrush x:Key="AnimatedBackground" StartPoint="0,0" EndPoint="1,1">
+			<GradientStop Color="#08162f" Offset="0"/>
+			<GradientStop Color="#142952" Offset="0.5"/>
+			<GradientStop Color="#2f4a77" Offset="1"/>
+			<LinearGradientBrush.Transform>
+				<StaticResourceExtension ResourceKey="GradientRotation"/>
+			</LinearGradientBrush.Transform>
+		</LinearGradientBrush>
+
+		<!-- Определяем стили для элементов -->
+		<Style x:Key="MessageTextStyle" TargetType="TextBlock">
+			<Setter Property="FontFamily" Value="Arial"/>
+			<Setter Property="FontSize" Value="14"/>
+			<Setter Property="Foreground" Value="White"/>
+			<Setter Property="TextWrapping" Value="Wrap"/>
+		</Style>
+
+		<Style x:Key="DateTextStyle" TargetType="TextBlock" BasedOn="{StaticResource MessageTextStyle}">
+			<Setter Property="FontSize" Value="12"/>
+			<Setter Property="HorizontalAlignment" Value="Center"/>
+			<Setter Property="Visibility" Value="Hidden"/>
+		</Style>
+
+		<Style x:Key="SendButtonStyle" TargetType="Image">
+			<Setter Property="Width" Value="24"/>
+			<Setter Property="Height" Value="24"/>
+			<Setter Property="HorizontalAlignment" Value="Center"/>
+			<Setter Property="VerticalAlignment" Value="Center"/>
+			<Setter Property="Opacity" Value="1"/>
+			<Style.Triggers>
+				<EventTrigger RoutedEvent="MouseEnter">
+					<BeginStoryboard>
+						<Storyboard>
+							<DoubleAnimation Storyboard.TargetProperty="Opacity" To="0.7" Duration="0:0:0.2"/>
+						</Storyboard>
+					</BeginStoryboard>
+				</EventTrigger>
+				<EventTrigger RoutedEvent="MouseLeave">
+					<BeginStoryboard>
+						<Storyboard>
+							<DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.2"/>
+						</Storyboard>
+					</BeginStoryboard>
+				</EventTrigger>
+			</Style.Triggers>
+		</Style>
+	</Page.Resources>
+
+	<Page.Triggers>
+		<EventTrigger RoutedEvent="Page.Loaded">
+			<BeginStoryboard>
+				<Storyboard>
+					<DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.5"/>
+				</Storyboard>
+			</BeginStoryboard>
+		</EventTrigger>
+	</Page.Triggers>
+
+	<Grid>
+		<!-- Анимированный фоновый элемент -->
+		<Rectangle x:Name="BackgroundRectangle" Fill="{StaticResource AnimatedBackground}">
+			<Rectangle.Effect>
+				<BlurEffect Radius="100"/>
+			</Rectangle.Effect>
+			<Rectangle.Triggers>
+				<EventTrigger RoutedEvent="Loaded">
+					<BeginStoryboard>
+						<Storyboard>
+							<DoubleAnimation
+                                Storyboard.TargetProperty="(Rectangle.Fill).(LinearGradientBrush.Transform).(RotateTransform.Angle)"
+                                From="0" To="360" Duration="0:0:30"
+                                RepeatBehavior="Forever"/>
+						</Storyboard>
+					</BeginStoryboard>
+				</EventTrigger>
+			</Rectangle.Triggers>
+		</Rectangle>
+
+		<!-- Полупрозрачный оверлей -->
+		<Rectangle Fill="#1A08162f"/>
+
+		<ScrollViewer Name="ScrollBox" Margin="0,20,0,80">
+			<ItemsControl x:Name="ChatList" Background="Transparent" BorderBrush="Transparent">
+				<ItemsControl.ItemTemplate>
+					<DataTemplate>
+						<Grid Margin="30,0,30,10">
+							<TextBlock Name="DateMessage" Style="{StaticResource DateTextStyle}"
+                                       Text="{Binding Path=DateMessage}">
+								<TextBlock.Triggers>
+									<EventTrigger RoutedEvent="TextBlock.Loaded">
+										<BeginStoryboard>
+											<Storyboard>
+												<DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.3"/>
+											</Storyboard>
+										</BeginStoryboard>
+									</EventTrigger>
+								</TextBlock.Triggers>
+							</TextBlock>
+
+							<Grid Name="Grid" Margin="0,0,0,0">
+								<Rectangle Name="messageCloud" RadiusX="10" RadiusY="10" Fill="Transparent" StrokeThickness="3"
+                                           HorizontalAlignment="{Binding Path=Alignment}" Stroke="Transparent" Height="Auto"
+                                           Margin="0,0,20,0">
+									<Rectangle.Width>
+										<Binding Path="ActualWidth" ElementName="Message" />
+									</Rectangle.Width>
+								</Rectangle>
+
+								<StackPanel Name="Block" Margin="5">
+									<Border BorderBrush="Transparent" BorderThickness="2" Padding="5" HorizontalAlignment="{Binding Path=Alignment}" Background="#055f84" CornerRadius="10">
+										<StackPanel>
+											<TextBlock Name="Message" Style="{StaticResource MessageTextStyle}"
+                                                       Text="{Binding Path=Message}" HorizontalAlignment="{Binding Path=Alignment}">
+												<TextBlock.RenderTransform>
+													<TransformGroup>
+														<ScaleTransform x:Name="ScaleTransform" />
+														<TranslateTransform x:Name="MessageTranslate" />
+													</TransformGroup>
+												</TextBlock.RenderTransform>
+												<TextBlock.Triggers>
+													<EventTrigger RoutedEvent="TextBlock.Loaded">
+														<BeginStoryboard>
+															<Storyboard>
+																<DoubleAnimation Storyboard.TargetProperty="RenderTransform.Children[0].ScaleX" From="0" To="1" Duration="0:0:0.4"/>
+																<DoubleAnimation Storyboard.TargetProperty="RenderTransform.Children[0].ScaleY" From="0" To="1" Duration="0:0:0.4"/>
+																<DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.6"/>
+																<DoubleAnimation Storyboard.TargetProperty="RenderTransform.Children[1].Y" From="-30" To="0" Duration="0:0:0.6"/>
+															</Storyboard>
+														</BeginStoryboard>
+													</EventTrigger>
+												</TextBlock.Triggers>
+											</TextBlock>
+
+											<TextBlock Name="Time" Style="{StaticResource MessageTextStyle}" FontSize="12"
+                                                       Text="{Binding Path=Time}" HorizontalAlignment="Right"/>
+										</StackPanel>
+									</Border>
+								</StackPanel>
+							</Grid>
+						</Grid>
+
+						<DataTemplate.Triggers>
+							<DataTrigger Binding="{Binding Path=IsDateVisible}" Value="true">
+								<Setter TargetName="DateMessage" Property="Visibility" Value="Visible" />
+								<Setter TargetName="Grid" Property="Margin" Value="0,30,0,0"/>
+							</DataTrigger>
+						</DataTemplate.Triggers>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
+		</ScrollViewer>
+
+        <Image HorizontalAlignment="Left" Height="356" Margin="-92,315,0,0" VerticalAlignment="Top" Width="319" Source="/assets/images/dragon.png"
+               Opacity="0.2" StretchDirection="DownOnly"/>
+
+        <Border BorderThickness="0" Margin="25,495,25,20" CornerRadius="16">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#0F172A" Offset="0"/>
+                    <GradientStop Color="#1E293B" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Border.Effect>
+                <DropShadowEffect Color="#0EA5E9" BlurRadius="20" ShadowDepth="0" Opacity="0.15"/>
+            </Border.Effect>
+            <Grid>
+                <Border Margin="1" CornerRadius="15" Opacity="0.1">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#0EA5E9" Offset="0"/>
+                            <GradientStop Color="#2563EB" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                </Border>
+
+                <Border BorderThickness="0" Height="32" Margin="755,0,0,0" VerticalAlignment="Center" Width="32" HorizontalAlignment="Left"
+                CornerRadius="10" MouseLeftButtonDown="send" MouseEnter="sendBtnMouseEnter" MouseLeave="sendBtnMouseLeave">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#0EA5E9" Offset="0"/>
+                            <GradientStop Color="#0284C7" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <Border.Effect>
+                        <DropShadowEffect Color="#0EA5E9" BlurRadius="12" ShadowDepth="0" Opacity="0.3"/>
+                    </Border.Effect>
+                    <Grid Margin="-1,-1,-1,-1">
+                        <Rectangle Name="SendButtonBackground" Height="32" VerticalAlignment="Center" Width="32" HorizontalAlignment="Center" Opacity="0"
+                           RadiusX="10" RadiusY="10">
+                            <Rectangle.Fill>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#38BDF8" Offset="0"/>
+                                    <GradientStop Color="#0EA5E9" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Rectangle.Fill>
+                        </Rectangle>
+                        <Image Name="SendButton" Style="{StaticResource SendButtonStyle}" Source="/assets/images/send.png" Margin="8">
+                            <Image.Effect>
+                                <DropShadowEffect Color="#38BDF8" BlurRadius="8" ShadowDepth="0" Opacity="0.6"/>
+                            </Image.Effect>
+                            <Image.ToolTip>
+                                <ToolTip Content="Отправить сообщение" Placement="Top" Foreground="#E2E8F0">
+                                    <ToolTip.Background>
+                                        <SolidColorBrush Color="#0F172A" Opacity="0.95"/>
+                                    </ToolTip.Background>
+                                </ToolTip>
+                            </Image.ToolTip>
+                        </Image>
+                    </Grid>
+                </Border>
+
+                <TextBox x:Name="TextBox" HorizontalAlignment="Left" Margin="20,0,0,0" TextWrapping="Wrap" VerticalAlignment="Center" Width="722"
+                 Background="{x:Null}" BorderBrush="{x:Null}" Foreground="#E2E8F0" SelectionBrush="#38BDF8" CaretBrush="#38BDF8" 
+                 BorderThickness="0" SelectionOpacity="1" IsTabStop="False" SpellCheck.IsEnabled="True" Language="ru-ru" 
+                 TextChanged="messageBuffer" FontFamily="Abrade" FontSize="16" Padding="10,12">
+                    <TextBox.Effect>
+                        <DropShadowEffect Color="#0EA5E9" BlurRadius="10" ShadowDepth="0" Opacity="0.1"/>
+                    </TextBox.Effect>
+                    <TextBox.Resources>
+                        <Style TargetType="{x:Type TextBox}">
+                            <Style.Triggers>
+                                <Trigger Property="IsFocused" Value="True">
+                                    <Setter Property="Effect">
+                                        <Setter.Value>
+                                            <DropShadowEffect Color="#0EA5E9" BlurRadius="15" ShadowDepth="0" Opacity="0.3"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBox.Resources>
+                </TextBox>
+            </Grid>
+        </Border>
+
+        <Label x:Name="HelloLabel" Content="Начните общение прямо сейчас..." HorizontalAlignment="Center" Margin="0,253,0,0" VerticalAlignment="Top"
+               Foreground="White" FontFamily="Arial">
+			<Label.Triggers>
+				<EventTrigger RoutedEvent="Label.Loaded">
+					<BeginStoryboard>
+						<Storyboard>
+							<DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.5"/>
+						</Storyboard>
+					</BeginStoryboard>
+				</EventTrigger>
+			</Label.Triggers>
+		</Label>
+	</Grid>
+</Page>

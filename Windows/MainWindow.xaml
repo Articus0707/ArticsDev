@@ -1,0 +1,648 @@
+﻿<Window x:Class="Jaina.WindowModels.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:tb="http://www.hardcodet.net/taskbar"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Name="AssistantJaina"
+        Title="Jaina" Height="600" Width="1100" Background="Transparent" Foreground="White" 
+        ResizeMode="NoResize" WindowStartupLocation="CenterScreen" Icon="/assets/icon.ico" PreviewKeyDown="hotKeys" WindowStyle="None"
+        AllowsTransparency="True" Loaded="windowLoaded">
+    <Window.Resources>
+        <!-- ReSharper disable Xaml.RedundantResource -->
+        <Image x:Key="CloseImage" Source="/Assets/images/close.png"/>
+        <Image x:Key="MinimizeImage" Source="/assets/images/hide.png"/>
+        <Image x:Key="MuteImage" Source="/Assets/images/mute.png"/>
+        <Image x:Key="MicrophoneImage" Source="/Assets/images/microphone.png"/>
+        <Image x:Key="HomeImage" Source="/Assets/Images/Home.png"/>
+        <!-- ReSharper restore Xaml.RedundantResource -->
+
+        <!-- Стиль для бокового меню -->
+        <Style x:Key="SideMenuButton" TargetType="Border">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="CornerRadius" Value="23"/>
+            <Setter Property="Margin" Value="15,4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="20" Color="#00a2ff" ShadowDepth="0" Opacity="0"/>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Trigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation 
+                            Storyboard.TargetProperty="(Effect).Opacity"
+                            To="0.7" Duration="0:0:0.2"/>
+                                <DoubleAnimation 
+                            Storyboard.TargetProperty="(Effect).BlurRadius"
+                            To="25" Duration="0:0:0.2"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.EnterActions>
+                    <Trigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation 
+                            Storyboard.TargetProperty="(Effect).Opacity"
+                            To="0" Duration="0:0:0.2"/>
+                                <DoubleAnimation 
+                            Storyboard.TargetProperty="(Effect).BlurRadius"
+                            To="20" Duration="0:0:0.2"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.ExitActions>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Стиль для иконок в меню -->
+        <Style x:Key="NeonIconStyle" TargetType="Path">
+            <Setter Property="Width" Value="20"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Fill" Value="#00a2ff"/>
+            <Setter Property="Stretch" Value="Uniform"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect 
+                BlurRadius="15" 
+                Color="#00a2ff" 
+                ShadowDepth="0"/>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <EventTrigger RoutedEvent="Path.Loaded">
+                    <BeginStoryboard>
+                        <Storyboard RepeatBehavior="Forever">
+                            <DoubleAnimation 
+                        Storyboard.TargetProperty="(Effect).BlurRadius"
+                        From="15" To="25" Duration="0:0:1"
+                        AutoReverse="True"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Стиль для текста в меню -->
+        <Style x:Key="NeonMenuText" TargetType="TextBlock">
+            <Setter Property="Margin" Value="15,0,0,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="10" Color="#00a2ff" ShadowDepth="0" Opacity="0"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Добавляем стили для кнопок управления окном -->
+        <Style x:Key="WindowControlButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="Margin" Value="0,5,0,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" 
+                                Background="{TemplateBinding Background}" 
+                                CornerRadius="15">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center"/>
+                            <Border.Effect>
+                                <DropShadowEffect x:Name="glow" 
+                                                Color="#00a2ff" 
+                                                BlurRadius="15" 
+                                                ShadowDepth="0" 
+                                                Opacity="0"/>
+                            </Border.Effect>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation 
+                                                Storyboard.TargetName="border"
+                                                Storyboard.TargetProperty="Opacity"
+                                                To="0.8" Duration="0:0:0.2"/>
+                                            <DoubleAnimation 
+                                                Storyboard.TargetName="glow"
+                                                Storyboard.TargetProperty="Opacity"
+                                                To="1" Duration="0:0:0.2"/>
+                                            <ColorAnimation 
+                                                Storyboard.TargetName="border"
+                                                Storyboard.TargetProperty="Background.Color"
+                                                To="#3f007eff" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation 
+                                                Storyboard.TargetName="border"
+                                                Storyboard.TargetProperty="Opacity"
+                                                To="1" Duration="0:0:0.2"/>
+                                            <DoubleAnimation 
+                                                Storyboard.TargetName="glow"
+                                                Storyboard.TargetProperty="Opacity"
+                                                To="0" Duration="0:0:0.2"/>
+                                            <ColorAnimation 
+                                                Storyboard.TargetName="border"
+                                                Storyboard.TargetProperty="Background.Color"
+                                                To="Transparent" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Grid Background="#08162f">
+
+        <Grid.Clip>
+            <RectangleGeometry RadiusX="20" RadiusY="20" Rect="0,0,1100,600"/>
+        </Grid.Clip>
+        <Rectangle HorizontalAlignment="Center" Height="40" VerticalAlignment="Top" Width="1100" Fill="#08162f" 
+                   MouseLeftButtonDown="movingWindow"/>
+        <!-- Анимируемая надпись -->
+        <Label Content="JAINA" HorizontalAlignment="Left" Margin="70,0,0,0" VerticalAlignment="Top" 
+       FontFamily="Abrade" FontWeight="ExtraBold" RenderTransformOrigin="0.5,0.5" FontSize="20">
+            <Label.Foreground>
+                <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5" x:Name="ShiningBrush">
+                    <GradientStop Color="#FF009CFF" Offset="0"/>
+                    <GradientStop Color="#FF7D00FF" Offset="0.5"/>
+                    <GradientStop Color="#FF009CFF" Offset="1"/>
+                </LinearGradientBrush>
+            </Label.Foreground>
+            <Label.Triggers>
+                <!-- Анимация перелива -->
+                <EventTrigger RoutedEvent="Loaded">
+                    <BeginStoryboard>
+                        <Storyboard RepeatBehavior="Forever">
+                            <!-- Анимация для первого градиентного цвета -->
+                            <DoubleAnimation 
+                        Storyboard.TargetName="ShiningBrush" 
+                        Storyboard.TargetProperty="GradientStops[0].Offset" 
+                        From="0" To="1" Duration="0:0:2" AutoReverse="True"/>
+
+                            <!-- Анимация для второго градиентного цвета -->
+                            <DoubleAnimation 
+                        Storyboard.TargetName="ShiningBrush" 
+                        Storyboard.TargetProperty="GradientStops[1].Offset" 
+                        From="0.5" To="1.5" Duration="0:0:2" AutoReverse="True"/>
+
+                            <!-- Анимация для третьего градиентного цвета -->
+                            <DoubleAnimation 
+                        Storyboard.TargetName="ShiningBrush" 
+                        Storyboard.TargetProperty="GradientStops[2].Offset" 
+                        From="1" To="2" Duration="0:0:2" AutoReverse="True"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Label.Triggers>
+        </Label>
+        <Label Content="1.1.3" HorizontalAlignment="Left" Margin="70,24,0,0" VerticalAlignment="Top" Foreground="White" 
+               FontFamily="Arial" RenderTransformOrigin="0.349,0.585"/>
+
+        <tb:TaskbarIcon 
+    Name="TaskbarIcon"
+    Visibility="Visible"
+    ToolTipText="Jaina"
+    IconSource="/assets/icon.ico"
+    TrayLeftMouseDown="trayIconClick"
+    KeyDown="hotKeys"
+    Margin="1077,573,0,0"
+    OpacityMask="#FF0E0E0E">
+
+            <tb:TaskbarIcon.ContextMenu>
+                <ContextMenu Background="#FF1A1A2E">
+                    <ContextMenu.Resources>
+                        <Style TargetType="MenuItem">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Foreground" Value="#FF00FFFF"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Padding" Value="10,5"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="MenuItem">
+                                        <Border x:Name="Border"
+                                        Background="{TemplateBinding Background}"
+                                        CornerRadius="8"
+                                        Margin="2">
+                                            <Grid>
+                                                <ContentPresenter 
+                                            Content="{TemplateBinding Header}"
+                                            Margin="{TemplateBinding Padding}"/>
+                                            </Grid>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Border" Property="Background" Value="#FF2A2A4E"/>
+                                                <Setter Property="Effect">
+                                                    <Setter.Value>
+                                                        <DropShadowEffect Color="#FF00FFFF" BlurRadius="10" ShadowDepth="0"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+
+                        <Style TargetType="ContextMenu">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ContextMenu">
+                                        <Border Background="{TemplateBinding Background}"
+										BorderThickness="0"
+										CornerRadius="8"
+										Padding="2">
+                                            <ItemsPresenter/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+
+                        <Style TargetType="Separator">
+                            <Setter Property="Background" Value="#FF00FFFF"/>
+                            <Setter Property="Margin" Value="5,2"/>
+                            <Setter Property="Opacity" Value="0.3"/>
+                        </Style>
+                    </ContextMenu.Resources>
+
+                    <MenuItem 
+                x:Name="TrayIconMuteBtn"
+                Header="Выкл. микрофон"
+                Click="trayIconMute"/>
+
+                    <MenuItem 
+                Header="Открыть"
+                Click="trayIconClick"/>
+
+
+                    <MenuItem 
+                x:Name="TrayIconSettingsBtn"
+                Header="Настройки"
+                Click="trayIconClick"/>
+
+                    <MenuItem 
+                x:Name="TrayIconChatBtn"
+                Header="Чат"
+                Click="trayIconClick"/>
+
+
+                    <MenuItem 
+                Header="Закрыть"
+                Click="trayIconClose"/>
+                </ContextMenu>
+            </tb:TaskbarIcon.ContextMenu>
+        </tb:TaskbarIcon>
+
+        <!-- Анимируемая надпись -->
+        <Label x:Name="GreetingLabel" Content="PreRelease версия" 
+       HorizontalAlignment="Left" 
+       FontFamily="Arial" Margin="98,24,0,0" VerticalAlignment="Top">
+            <Label.Foreground>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <LinearGradientBrush.RelativeTransform>
+                        <TransformGroup>
+                            <ScaleTransform CenterY="0.5" CenterX="0.5"/>
+                            <SkewTransform CenterX="0.5" CenterY="0.5"/>
+                            <RotateTransform x:Name="AnimatedTransform" Angle="0" CenterX="0.5" CenterY="0.5"/>
+                            <TranslateTransform/>
+                        </TransformGroup>
+                    </LinearGradientBrush.RelativeTransform>
+                    <GradientStop Color="#FF00F9FF" Offset="1"/>
+                    <GradientStop Color="#FFC3FF00"/>
+                </LinearGradientBrush>
+            </Label.Foreground>
+            <Label.Triggers>
+                <!-- Анимация вращения -->
+                <EventTrigger RoutedEvent="Loaded">
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation 
+                        Storyboard.TargetName="AnimatedTransform" 
+                        Storyboard.TargetProperty="Angle" 
+                        From="0" To="360" 
+                        Duration="0:0:2" 
+                        RepeatBehavior="Forever"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Label.Triggers>
+        </Label>
+
+        <!-- Обновляем кнопки управления окном с новым стилем -->
+        <Button Style="{StaticResource WindowControlButtonStyle}" 
+                Margin="0,5,5,0"
+                Click="closeWindow">
+            <Image Source="/Assets/images/close.png" Width="16" Height="16">
+                <Image.Effect>
+                    <DropShadowEffect Color="#00a2ff" BlurRadius="10" ShadowDepth="0"/>
+                </Image.Effect>
+            </Image>
+        </Button>
+
+        <Button Name="Mute" 
+                Style="{StaticResource WindowControlButtonStyle}" 
+                Margin="0,5,85,0"
+                Click="mute">
+            <Image Source="/Assets/images/microphone.png" Width="16" Height="16">
+                <Image.Effect>
+                    <DropShadowEffect Color="#00a2ff" BlurRadius="10" ShadowDepth="0"/>
+                </Image.Effect>
+            </Image>
+        </Button>
+
+        <Button Style="{StaticResource WindowControlButtonStyle}" 
+                Margin="0,5,45,0"
+                Click="minimizeWindow">
+            <Image Source="/assets/images/hide.png" Width="16" Height="16">
+                <Image.Effect>
+                    <DropShadowEffect Color="#00a2ff" BlurRadius="10" ShadowDepth="0"/>
+                </Image.Effect>
+            </Image>
+        </Button>
+
+        <Frame Name="MainFrame" Margin="250,40,0,0" NavigationUIVisibility="Hidden" IsTabStop="False"/>
+
+        <!-- Основное меню -->
+        <Grid Width="249" Height="180" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,60,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="45"/>
+            </Grid.RowDefinitions>
+
+            <!-- Главная -->
+            <Border Grid.Row="0" Style="{StaticResource SideMenuButton}"
+                    MouseLeftButtonDown="getHomePage"
+                    MouseEnter="homeBtnMouseEnter"
+                    MouseLeave="homeBtnMouseLeave"
+                    x:Name="HomeButton">
+                <Grid>
+                    <Border x:Name="GlowBorderHome"
+                            Background="#3f007eff"
+                            CornerRadius="23"
+                            Opacity="0">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="20" Color="#00a2ff" ShadowDepth="0"/>
+                        </Border.Effect>
+                    </Border>
+                    <Rectangle x:Name="HomeBtnMarker" 
+                              Fill="#00a2ff" 
+                              Width="3" Height="25" 
+                              HorizontalAlignment="Left" 
+                              Margin="0,0,0,0" 
+                              Opacity="0">
+                        <Rectangle.Effect>
+                            <DropShadowEffect BlurRadius="10" Color="#00a2ff" ShadowDepth="0"/>
+                        </Rectangle.Effect>
+                    </Rectangle>
+                    <StackPanel Orientation="Horizontal" 
+                              VerticalAlignment="Center"
+                              HorizontalAlignment="Left"
+                              Margin="25,0,0,0"
+                              IsHitTestVisible="False">
+                        <Path Style="{StaticResource NeonIconStyle}"
+                              Data="M12,3L20,9V21H15V14H9V21H4V9L12,3Z"/>
+                        <TextBlock Text="Главная" 
+                                  Style="{StaticResource NeonMenuText}">
+                            <TextBlock.Triggers>
+                                <EventTrigger RoutedEvent="MouseEnter">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation 
+                                                Storyboard.TargetProperty="(Effect).Opacity"
+                                                To="1" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                                <EventTrigger RoutedEvent="MouseLeave">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation 
+                                                Storyboard.TargetProperty="(Effect).Opacity"
+                                                To="0" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </TextBlock.Triggers>
+                        </TextBlock>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Настройки -->
+            <Border Grid.Row="1" Style="{StaticResource SideMenuButton}"
+                    MouseLeftButtonDown="getSettingsPage"
+                    MouseEnter="settingsBtnMouseEnter"
+                    MouseLeave="settingsBtnMouseLeave"
+                    x:Name="SettingsButton">
+                <Grid>
+                    <Border x:Name="GlowBorderSettings"
+                            Background="#3f007eff"
+                            CornerRadius="23"
+                            Opacity="0">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="20" Color="#00a2ff" ShadowDepth="0"/>
+                        </Border.Effect>
+                    </Border>
+                    <Rectangle x:Name="SettingsBtnMarker" 
+                              Fill="#00a2ff" 
+                              Width="3" Height="25" 
+                              HorizontalAlignment="Left" 
+                              Margin="0,0,0,0" 
+                              Opacity="0">
+                        <Rectangle.Effect>
+                            <DropShadowEffect BlurRadius="10" Color="#00a2ff" ShadowDepth="0"/>
+                        </Rectangle.Effect>
+                    </Rectangle>
+                    <StackPanel Orientation="Horizontal" 
+                              VerticalAlignment="Center"
+                              HorizontalAlignment="Left"
+                              Margin="25,0,0,0"
+                              IsHitTestVisible="False">
+                        <Path Style="{StaticResource NeonIconStyle}"
+                              Data="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/>
+                        <TextBlock Text="Настройки" 
+                                  Style="{StaticResource NeonMenuText}">
+                            <TextBlock.Triggers>
+                                <EventTrigger RoutedEvent="MouseEnter">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation 
+                                                Storyboard.TargetProperty="(Effect).Opacity"
+                                                To="1" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                                <EventTrigger RoutedEvent="MouseLeave">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation 
+                                                Storyboard.TargetProperty="(Effect).Opacity"
+                                                To="0" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </TextBlock.Triggers>
+                        </TextBlock>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- История чата -->
+            <Border Grid.Row="2" Style="{StaticResource SideMenuButton}"
+                    MouseLeftButtonDown="getChatPage"
+                    MouseEnter="chatBtnMouseEnter"
+                    MouseLeave="chatBtnMouseLeave"
+                    x:Name="ChatButton">
+                <Grid>
+                    <Border x:Name="GlowBorderChat"
+                            Background="#3f007eff"
+                            CornerRadius="23"
+                            Opacity="0">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="20" Color="#00a2ff" ShadowDepth="0"/>
+                        </Border.Effect>
+                    </Border>
+                    <Rectangle x:Name="ChatBtnMarker" 
+                              Fill="#00a2ff" 
+                              Width="3" Height="25" 
+                              HorizontalAlignment="Left" 
+                              Margin="0,0,0,0" 
+                              Opacity="0">
+                        <Rectangle.Effect>
+                            <DropShadowEffect BlurRadius="10" Color="#00a2ff" ShadowDepth="0"/>
+                        </Rectangle.Effect>
+                    </Rectangle>
+                    <StackPanel Orientation="Horizontal" 
+                              VerticalAlignment="Center"
+                              HorizontalAlignment="Left"
+                              Margin="25,0,0,0"
+                              IsHitTestVisible="False">
+                        <Path Style="{StaticResource NeonIconStyle}"
+                              Data="M20,2H4A2,2 0 0,0 2,4V22L6,18H20A2,2 0 0,0 22,16V4A2,2 0 0,0 20,2M6,9H18V11H6M14,14H6V12H14M18,8H6V6H18"/>
+                        <TextBlock Text="Чат" 
+                                  Style="{StaticResource NeonMenuText}">
+                            <TextBlock.Triggers>
+                                <EventTrigger RoutedEvent="MouseEnter">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation 
+                                                Storyboard.TargetProperty="(Effect).Opacity"
+                                                To="1" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                                <EventTrigger RoutedEvent="MouseLeave">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation 
+                                                Storyboard.TargetProperty="(Effect).Opacity"
+                                                To="0" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </TextBlock.Triggers>
+                        </TextBlock>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- О проекте -->
+            <Border Grid.Row="3" Style="{StaticResource SideMenuButton}"
+                    MouseLeftButtonDown="getAboutPage"
+                    MouseEnter="aboutBtnMouseEnter"
+                    MouseLeave="aboutBtnMouseLeave"
+                    x:Name="AboutButton">
+                <Grid>
+                    <Border x:Name="GlowBorderAbout"
+                            Background="#3f007eff"
+                            CornerRadius="23"
+                            Opacity="0">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="20" Color="#00a2ff" ShadowDepth="0"/>
+                        </Border.Effect>
+                    </Border>
+                    <Rectangle x:Name="AboutBtnMarker" 
+                              Fill="#00a2ff" 
+                              Width="3" Height="25" 
+                              HorizontalAlignment="Left" 
+                              Margin="0,0,0,0" 
+                              Opacity="0">
+                        <Rectangle.Effect>
+                            <DropShadowEffect BlurRadius="10" Color="#00a2ff" ShadowDepth="0"/>
+                        </Rectangle.Effect>
+                    </Rectangle>
+                    <StackPanel Orientation="Horizontal" 
+                              VerticalAlignment="Center"
+                              HorizontalAlignment="Left"
+                              Margin="25,0,0,0"
+                              IsHitTestVisible="False">
+                        <Path Style="{StaticResource NeonIconStyle}"
+                              Data="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z"/>
+                        <TextBlock Text="О проекте" 
+                                  Style="{StaticResource NeonMenuText}">
+                            <TextBlock.Triggers>
+                                <EventTrigger RoutedEvent="MouseEnter">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation 
+                                                Storyboard.TargetProperty="(Effect).Opacity"
+                                                To="1" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                                <EventTrigger RoutedEvent="MouseLeave">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation 
+                                                Storyboard.TargetProperty="(Effect).Opacity"
+                                                To="0" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </TextBlock.Triggers>
+                        </TextBlock>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <Image HorizontalAlignment="Left" Height="15" Margin="50,573,0,0" VerticalAlignment="Top" Width="15" Source="/assets/images/avatar.png"/>
+        <Label Content="© Artics development" HorizontalAlignment="Left" Margin="70,567,0,0" VerticalAlignment="Top" FontSize="14" Foreground="White"
+               FontFamily="Arial" FontWeight="Regular"/>
+        <Rectangle x:Name="AuthorLine" HorizontalAlignment="Left" Height="1" Margin="75,587,0,0" Stroke="White" VerticalAlignment="Top" 
+                   Width="134" Opacity="0"/>
+        <Rectangle Fill="Transparent" Height="10" Width="140" HorizontalAlignment="Left" Margin="48,575,0,0" VerticalAlignment="Top"
+                   MouseEnter="authorMouseEnter" MouseLeave="authorMouseLeave" MouseLeftButtonDown="authorLink"/>
+        <Image HorizontalAlignment="Left" Height="51" Margin="14,4,0,0" VerticalAlignment="Top" Width="55"  Source="/Assets/icon.ico">
+            <Image.Effect>
+                <DropShadowEffect/>
+            </Image.Effect>
+        </Image>
+    </Grid>
+</Window>
